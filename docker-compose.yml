@@ -4,17 +4,13 @@ services:
     ocp:
         build:
             context: ./
-        #image: picklewagon/budget-genius-site:${DOCKER_TAG_BG:-latest}
         env_file:
             - ./.env.local
-        environment:
-            YNAB_CLIENT_ID: "${YNAB_CLIENT_ID}"
-            YNAB_CLIENT_SECRET: "${YNAB_CLIENT_SECRET}"
         working_dir: /var/www/app
         volumes:
             - .:/var/www/app:consistent
-            - ./.docker/scripts/local.provision-packages.sh:/var/www/app/.docker/init.d/01-init.sh
-            - ./.docker/scripts/local.provision-database.sh:/var/www/app/.docker/init.d/02-init.sh
+#            - ./.docker/scripts/local.provision-packages.sh:/var/www/app/.docker/init.d/01-init.sh
+#            - ./.docker/scripts/local.provision-database.sh:/var/www/app/.docker/init.d/02-init.sh
             - ./.docker/config/nginx-site-dev.conf:/etc/nginx/conf.d/default.conf
         entrypoint: /var/www/app/.docker/scripts/local.entrypoint.sh
         command:
@@ -35,25 +31,6 @@ services:
             timeout: 3s
             retries: 30
             start_period: 30s
-
-    mysql:
-        image: mysql:8.0
-        #command: --default-authentication-plugin=mysql_native_password --sql-require-primary-key=ON
-        command: --default-authentication-plugin=mysql_native_password
-        volumes:
-            - "${DOCKER_VOLUME_MYSQL_STORAGE:-./.docker/storage/db/}:/var/lib/mysql"
-        ports:
-            - "${DOCKER_PORT_MYSQL:-13306}:3306"
-        networks:
-            - overlay
-        environment:
-            MYSQL_PASSWORD: ${DB_PASSWORD:-password}
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
-        healthcheck:
-            test: mysqladmin -u${DB_USERNAME:-root} -p${DB_PASSWORD:-password} ping
-            interval: 5s
-            timeout: 10s
-            retries: 30
 
 networks:
     overlay:

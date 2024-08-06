@@ -12,6 +12,6 @@ cd /var/www/app
 # We do this here to ensure that we are fully provisioned before we continue
 /var/www/app/.docker/scripts/entrypoint.sh
 
-/var/www/app/.docker/scripts/wait-for-it.sh mysql:3306 -t 60 --strict -- echo mysql database is ready
+#/var/www/app/.docker/scripts/wait-for-it.sh mysql:3306 -t 60 --strict -- echo mysql database is ready
 
 exec "$@"
