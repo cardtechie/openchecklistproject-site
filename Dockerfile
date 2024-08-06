@@ -1,5 +1,7 @@
 FROM php:8.3-fpm AS build
 
+ARG COMPOSER_TOKEN
+
 # PHP / FPM config defaults that we set via environment variables
 ENV PHP_OPCACHE_ENABLE=0 \
     PHP_OPCACHE_MEMORY_CONSUMPTION=64 \
@@ -135,13 +137,15 @@ ENV PATH="/composer/vendor/bin:/var/www/app/vendor/bin:/var/www/app/node_modules
 # Install composer packages
 WORKDIR /var/www/app
 #COPY --chown=www-data:www-data ./composer.json ./composer.lock ./
+#RUN composer config github-oauth.github.com ${COMPOSER_TOKEN}
 #RUN composer install --no-scripts --no-autoloader --ansi --no-interaction
-#RUN git config --global --add safe.directory /var/www/app
-#
+RUN git config --global --add safe.directory /var/www/app
+
 #WORKDIR /var/www
 #COPY --chown=www-data:www-data ./package.json ./package-lock.json ./
 #RUN npm install
-#
+
+ENV COMPOSER_VENDOR_DIR=/var/www/app/vendor
 #ENV COMPOSER_VENDOR_DIR=/var/www/app/vendor \
 #    NODE_PATH=/var/www/app/node_modules
 
