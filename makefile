@@ -13,6 +13,10 @@ upd:
 down:
 	docker-compose down
 
+clean:
+	rm -rf vendor
+	rm bootstrap/cache/*.php
+
 clean-docker:
 	docker system prune -af --volumes
 
