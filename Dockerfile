@@ -136,9 +136,9 @@ ENV PATH="/composer/vendor/bin:/var/www/app/vendor/bin:/var/www/app/node_modules
 
 # Install composer packages
 WORKDIR /var/www/app
-#COPY --chown=www-data:www-data ./composer.json ./composer.lock ./
-#RUN composer config github-oauth.github.com ${COMPOSER_TOKEN}
-#RUN composer install --no-scripts --no-autoloader --ansi --no-interaction
+COPY --chown=www-data:www-data ./composer.json ./composer.lock ./
+RUN composer config github-oauth.github.com ${COMPOSER_TOKEN}
+RUN composer install --no-scripts --no-autoloader --ansi --no-interaction
 RUN git config --global --add safe.directory /var/www/app
 
 #WORKDIR /var/www
@@ -164,6 +164,7 @@ COPY --chown=www-data:www-data . .
 # Create symlinks into /var/www/app. We do this so the image has these available in the app directory,
 # but also to ensure that when we bind-mount code in a dev enviroment these directories are still available
 # to copy into the local dev environment
+RUN ln -s /var/www/vendor /var/www/app/vendor
 #RUN ln -s /var/www/vendor /var/www/app/vendor \
 #    && ln -s /var/www/node_modules /var/www/app/node_modules
 
@@ -173,7 +174,7 @@ COPY --chown=www-data:www-data . .
 # application layer through the container's environment vars.
 RUN cp .env.local .env
 
-#RUN composer dump-autoload -o
+RUN composer dump-autoload -o
 # RUN npm run prod
 
 # Run entrypoint
