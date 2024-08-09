@@ -1,0 +1,78 @@
+name: Build Release
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  SERVICE_NAME: openchecklistproject-site
+  DOCKER_BUILDKIT: 1
+  VERSION: 0.1.${{ github.run_number }}
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          install: true
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-admin-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-admin-buildx
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and Push Image
+        uses: docker/build-push-action@v6
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: 'picklewagon/${{ env.SERVICE_NAME }}:${{ env.VERSION }}'
+          push: true
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMPOSER_TOKEN=${{ secrets.COMPOSER_TOKEN }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_APP_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+
+  trigger-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+      - uses: avakar/create-deployment@v1
+        id: deployment
+        with:
+          ref: ${{ env.VERSION }}
+          auto_merge: false
+          environment: production
+          transient_environment: true
+          required_contexts: ""
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_APP_TOKEN }}
+      - uses: avakar/set-deployment-status@v1
+        with:
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          state: queued
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_APP_TOKEN }}
