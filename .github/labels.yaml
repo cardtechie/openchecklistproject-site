@@ -1,0 +1,9 @@
+# Default labels
+- name: dependencies
+  description: Update dependencies
+  color: F9D0C4
+
+# Site specific labels
+- name: content
+  description: Content update
+  color: C2E0C6
