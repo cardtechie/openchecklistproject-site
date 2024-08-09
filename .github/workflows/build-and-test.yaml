@@ -32,6 +32,6 @@ jobs:
           file: Dockerfile
           push: false
           load: true
-          tags: picklewagon/${{SERVICE_NAME}}:test-${{ env.VERSION }}
+          tags: picklewagon/${{env.SERVICE_NAME}}:test-${{ env.VERSION }}
           build-args: |
             COMPOSER_TOKEN=${{ secrets.COMPOSER_TOKEN }}
